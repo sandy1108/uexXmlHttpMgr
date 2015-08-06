@@ -212,6 +212,7 @@ public class EHttpGet extends Thread implements HttpTask {
 			} else {
 				result = EUExXmlHttpMgr.CONNECT_FAIL_CONNECTION_FAILURE;
 			}
+			e.printStackTrace();
 		} finally {
 			try {
 				if (null != mInStream) {

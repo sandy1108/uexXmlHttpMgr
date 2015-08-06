@@ -233,6 +233,7 @@ public class EHttpPost extends Thread implements HttpTask, HttpClientListener {
 			} else {
 				result = EUExXmlHttpMgr.CONNECT_FAIL_CONNECTION_FAILURE;
 			}
+			e.printStackTrace();
 		} finally {
 			mHttpPost.abort();
 			mHttpClient.getConnectionManager().shutdown();
