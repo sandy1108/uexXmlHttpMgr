@@ -1,4 +1,4 @@
-package org.zywx.wbpalmstar.plugin.uexmultiHttp;
+package org.zywx.wbpalmstar.plugin.uexmultiHttp.certificates;
 
 import java.io.IOException;
 import java.net.InetAddress;

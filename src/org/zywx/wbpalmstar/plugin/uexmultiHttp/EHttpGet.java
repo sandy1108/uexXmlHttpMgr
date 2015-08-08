@@ -14,8 +14,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.zip.GZIPInputStream;
 
-import javax.net.ssl.HttpsURLConnection;
-
 import org.apache.http.HttpStatus;
 import org.apache.http.cookie.SM;
 import org.apache.http.protocol.HTTP;
@@ -144,17 +142,13 @@ public class EHttpGet extends Thread implements HttpTask {
 				mConnection = (HttpURLConnection) mClient.openConnection();
 				break;
 			case F_SHEM_ID_HTTPS:
-				mConnection = (HttpsURLConnection) mClient.openConnection();
-				javax.net.ssl.SSLSocketFactory ssFact = null;
 				if (mHasLocalCert) {
-					ssFact = Http.getSSLSocketFactoryWithCert(mCertPassword,
+					mConnection = Http.getHttpsURLConnectionWithCert(mClient,
+							mCertPassword,
 							mCertPath, mXmlHttpMgr.getContext());
 				} else {
-					ssFact = Http.getSSLSocketFactory();
+					mConnection = Http.getHttpsURLConnection(mClient);
 				}
-				((HttpsURLConnection) mConnection).setSSLSocketFactory(ssFact);
-				((HttpsURLConnection) mConnection)
-						.setHostnameVerifier(new HX509HostnameVerifier());
 				https = true;
 				break;
 			}
