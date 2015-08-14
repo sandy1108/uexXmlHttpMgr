@@ -72,6 +72,23 @@
 		uexXmlHttpMgr.send("3");
 		
 	}
+	function xmlHttpGet4(){
+	        var url = document.getElementById('add4').value;
+	        uexXmlHttpMgr.onData=function(id,status,result,requestCode,response){
+	            alert('status==='+status)
+	            alert('result==='+result)
+	            alert('requestCode==='+requestCode)
+	            alert('response==='+response)
+	            uexXmlHttpMgr.close(id)
+	        }
+	        uexXmlHttpMgr.open(4, "GET", url, "");
+	        uexXmlHttpMgr.setPostData(4,0,'username' ,15801621166 )
+	        uexXmlHttpMgr.setPostData(4,0, 'password', 111111)
+	        uexXmlHttpMgr.setPostData(4,0, 'deviceToken', "111")
+	        uexXmlHttpMgr.setPostData(4,0,'type' ,"MP" ) 
+	        uexXmlHttpMgr.setCertificate(4, 'Soudang_518', 'res://mykey.p12');
+	        uexXmlHttpMgr.send(4);
+	}
 
 
 	function httpSuccess(opid,state,result,requestCode,response){
@@ -111,9 +128,11 @@
 			<input class="textbox" type="text" id="add" value="https://www.baidu.com">
 			<input class="textbox" type="text" id="add2" value="https://www.12306.cn/mormhweb/">
 			<input class="textbox" type="text" id="add3" value="https://192.168.1.144:8443/appIn//sdk10098/form">
+			<input class="textbox" type="text" id="add4" value="https://111.205.208.35:8544/mobileAdmin/login/out">
 			<input class="btn" type="button" value="取数据" onclick=xmlHttpGet()>
 			<input class="btn" type="button" value="取数据2" onclick=xmlHttpGet2()>
 			<input class="btn" type="button" value="取数据3" onclick=xmlHttpGet3()>
+			<input class="btn" type="button" value="取数据4" onclick=xmlHttpGet4()>
 			<span>请求结果：</span>
 			<div class="tcxx" id="adre"></div>
 
@@ -125,7 +144,7 @@
 			数据二：<input class="textbox" type="text" id="addd2" value="fdsfdfsfsdf">
 			文件：<input  class="btn" type="button" value="启动文件浏览器" onclick="uexFileMgr.explorer('');">
 			<span id="sss"></span>
-			<input class="btn" type="button" value="发请求" onclick=xmlHttpPost2()>
+			<input class="btn" type="button" value="发请求(搜当网测试)" onclick=xmlHttpPost2()>
 		
 			<span>
             3.获取cookie
