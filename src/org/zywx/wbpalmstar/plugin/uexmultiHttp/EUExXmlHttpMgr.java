@@ -93,8 +93,11 @@ public class EUExXmlHttpMgr extends EUExBase {
 		if (inMethod.equalsIgnoreCase("get")){
 			xmlHttp = new EHttpGet(opCode, inUrl, timeout, this);
 		}
-		if (inMethod.equalsIgnoreCase("post")) {
+		if (inMethod.equalsIgnoreCase("post2")) {
 			xmlHttp = new EHttpPost(opCode, inUrl, timeout, this);
+		}
+		if (inMethod.equalsIgnoreCase("post")) {
+			xmlHttp = new ENetHttpPost(opCode, inUrl, timeout, this);
 		}
 		if (inMethod.equalsIgnoreCase("put")) {
 			xmlHttp = new EHttpPut(opCode, inUrl, timeout, this);

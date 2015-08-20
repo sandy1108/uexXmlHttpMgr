@@ -35,21 +35,40 @@
 	}
 	function xmlHttpPost2(){
 		var dataUrl = 'https://111.205.208.35:8544'
-	        var url = dataUrl+"/llt/rest/customer/authenticate"
-	        uexXmlHttpMgr.onData=function(id,status,result,requestCode,response){
-	            alert('status==='+status)
-	            alert('result==='+result)
-	            alert('requestCode==='+requestCode)
-	            alert('response==='+response)
-	            uexXmlHttpMgr.close(id)
-	        }
-	        uexXmlHttpMgr.open(1, "POST", url, "");
-	        uexXmlHttpMgr.setPostData(1,0,'username' ,15801621166 )
-	        uexXmlHttpMgr.setPostData(1,0, 'password', 111111)
-	        uexXmlHttpMgr.setPostData(1,0, 'deviceToken', "111")
-	        uexXmlHttpMgr.setPostData(1,0,'type' ,"MP" ) 
-	        uexXmlHttpMgr.setCertificate(1, 'Soudang_518', 'res://mykey.p12');
-	        uexXmlHttpMgr.send(1);
+        var url = dataUrl+"/llt/rest/customer/authenticate"
+        uexXmlHttpMgr.onData=function(id,status,result,requestCode,response){
+            alert('status==='+status)
+            alert('result==='+result)
+            alert('requestCode==='+requestCode)
+            alert('response==='+response)
+            uexXmlHttpMgr.close(id)
+        }
+        uexXmlHttpMgr.open(1, "POST", url, "");
+        uexXmlHttpMgr.setPostData(1,0,'username' ,15801621166 )
+        uexXmlHttpMgr.setPostData(1,0, 'password', 111111)
+        uexXmlHttpMgr.setPostData(1,0, 'deviceToken', "111")
+        uexXmlHttpMgr.setPostData(1,0,'type' ,"MP" ) 
+        uexXmlHttpMgr.setCertificate(1, 'Soudang_518', 'res://mykey.p12');
+        uexXmlHttpMgr.send(1);
+		
+	}
+	function xmlHttpPost3(){
+		var dataUrl = 'https://111.205.208.35:8544'
+        var url = dataUrl+"/llt/rest/customer/authenticate"
+        uexXmlHttpMgr.onData=function(id,status,result,requestCode,response){
+            alert('status==='+status)
+            alert('result==='+result)
+            alert('requestCode==='+requestCode)
+            alert('response==='+response)
+            uexXmlHttpMgr.close(id)
+        }
+        uexXmlHttpMgr.open(1, "POST2", url, "");
+        uexXmlHttpMgr.setPostData(1,0,'username' ,15801621166 )
+        uexXmlHttpMgr.setPostData(1,0, 'password', 111111)
+        uexXmlHttpMgr.setPostData(1,0, 'deviceToken', "111")
+        uexXmlHttpMgr.setPostData(1,0,'type' ,"MP" ) 
+        uexXmlHttpMgr.setCertificate(1, 'Soudang_518', 'res://mykey.p12');
+        uexXmlHttpMgr.send(1);
 		
 	}
 
@@ -132,7 +151,7 @@
 			<input class="btn" type="button" value="取数据" onclick=xmlHttpGet()>
 			<input class="btn" type="button" value="取数据2" onclick=xmlHttpGet2()>
 			<input class="btn" type="button" value="取数据3" onclick=xmlHttpGet3()>
-			<input class="btn" type="button" value="取数据4" onclick=xmlHttpGet4()>
+			<input class="btn" type="button" value="取数据4(搜当网get)" onclick=xmlHttpGet4()>
 			<span>请求结果：</span>
 			<div class="tcxx" id="adre"></div>
 
@@ -145,6 +164,7 @@
 			文件：<input  class="btn" type="button" value="启动文件浏览器" onclick="uexFileMgr.explorer('');">
 			<span id="sss"></span>
 			<input class="btn" type="button" value="发请求(搜当网测试)" onclick=xmlHttpPost2()>
+			<input class="btn" type="button" value="发请求(搜当网测试2)" onclick=xmlHttpPost3()>
 		
 			<span>
             3.获取cookie

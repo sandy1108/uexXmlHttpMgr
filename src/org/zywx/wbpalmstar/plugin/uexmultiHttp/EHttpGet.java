@@ -182,8 +182,8 @@ public class EHttpGet extends Thread implements HttpTask {
 			case HttpStatus.SC_TEMPORARY_REDIRECT:
 				List<String> urls = headers.get("Location");
 				if (null != urls && urls.size() > 0) {
-					Log.i("xmlHttpMgr", "redirect url " + responseCode);
 					mRedirects = urls.get(0);
+					Log.i("xmlHttpMgr", "redirect url " + mRedirects);
 					mFromRedirects = true;
 					handleCookie(curUrl, headers);
 					doInBackground();

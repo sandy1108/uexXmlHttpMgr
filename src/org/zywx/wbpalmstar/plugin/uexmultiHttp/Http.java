@@ -30,27 +30,26 @@ import android.content.Context;
 import android.content.res.AssetManager;
 
 public class Http {
-	
+
 	public static HashMap<String, KeyStore> KEY_STORE = new HashMap<String, KeyStore>();
 	public static String algorithm = "X509";
-	public static String keyType 	= "pkcs12";
+	public static String keyType = "pkcs12";
 	/**
 	 * 是否检查https证书为可信机构颁发
 	 */
 	private static boolean isCheckTrustCert = true;
-	
+
 	public static HttpClient getHttpsClient(int mTimeOut) {
 		try {
 			KeyStore trustStore = KeyStore.getInstance(keyType);
 			trustStore.load(null, null);
-			SSLSocketFactory socketFact = new HSSLSocketFactory(trustStore, null);
+			SSLSocketFactory socketFact = new HSSLSocketFactory(trustStore,
+					null);
 			SchemeRegistry registry = new SchemeRegistry();
-			registry.register(new Scheme("http", PlainSocketFactory.getSocketFactory(), 80));
 			registry.register(new Scheme("http", PlainSocketFactory
-					.getSocketFactory(), 8080));
+					.getSocketFactory(), 80));
 			registry.register(new Scheme("https", socketFact, 443));
-			registry.register(new Scheme("https", socketFact, 8443));
-			
+
 			HttpParams params = new BasicHttpParams();
 			HttpConnectionParams.setConnectionTimeout(params, mTimeOut);
 			HttpConnectionParams.setSoTimeout(params, mTimeOut);
@@ -58,35 +57,36 @@ public class Http {
 			HttpClientParams.setRedirecting(params, false);
 			HttpProtocolParams.setVersion(params, HttpVersion.HTTP_1_1);
 			HttpProtocolParams.setContentCharset(params, HTTP.UTF_8);
-			
-			ClientConnectionManager ccm = new ThreadSafeClientConnManager(params, registry);
+
+			ClientConnectionManager ccm = new ThreadSafeClientConnManager(
+					params, registry);
 			return new DefaultHttpClient(ccm, params);
 		} catch (Exception e) {
 			e.printStackTrace();
-			return null;
+			return getHttpClient(mTimeOut);
 		}
 	}
-	
-	public static HttpClient getHttpsClientWithCert(String cPassWord, String cPath, int mTimeOut, Context ctx) {
+
+	public static HttpClient getHttpsClientWithCert(String cPassWord,
+			String cPath, int mTimeOut, Context ctx) {
 		InputStream inStream = null;
 		try {
 			int index = cPath.lastIndexOf('/') + 1;
-	        String keyName = cPath.substring(index);
-	        KeyStore ksP12 = KEY_STORE.get(keyName);
-	        if(null == ksP12){
+			String keyName = cPath.substring(index);
+			KeyStore ksP12 = KEY_STORE.get(keyName);
+			if (null == ksP12) {
 				inStream = getInputStream(cPath, ctx);
-				ksP12 = KeyStore.getInstance(keyType);          
+				ksP12 = KeyStore.getInstance(keyType);
 				ksP12.load(inStream, cPassWord.toCharArray());
 				KEY_STORE.put(keyName, ksP12);
-	        } 
-			SSLSocketFactory socketFact = new HSSLSocketFactory(ksP12, cPassWord);
+			}
+			SSLSocketFactory socketFact = new HSSLSocketFactory(ksP12,
+					cPassWord);
 			SchemeRegistry registry = new SchemeRegistry();
-			registry.register(new Scheme("http", PlainSocketFactory.getSocketFactory(), 80));
 			registry.register(new Scheme("http", PlainSocketFactory
-					.getSocketFactory(), 8080));
+					.getSocketFactory(), 80));
 			registry.register(new Scheme("https", socketFact, 443));
-			registry.register(new Scheme("https", socketFact, 8443));
-			
+
 			HttpParams params = new BasicHttpParams();
 			HttpConnectionParams.setConnectionTimeout(params, mTimeOut);
 			HttpConnectionParams.setSoTimeout(params, mTimeOut);
@@ -94,14 +94,15 @@ public class Http {
 			HttpClientParams.setRedirecting(params, false);
 			HttpProtocolParams.setVersion(params, HttpVersion.HTTP_1_1);
 			HttpProtocolParams.setContentCharset(params, HTTP.UTF_8);
-			
-			ClientConnectionManager ccm = new ThreadSafeClientConnManager(params, registry);
+
+			ClientConnectionManager ccm = new ThreadSafeClientConnManager(
+					params, registry);
 			return new DefaultHttpClient(ccm, params);
 		} catch (Exception e) {
 			e.printStackTrace();
-			return null;
-		}finally{
-			if(null != inStream){
+			return getHttpsClient(mTimeOut);
+		} finally {
+			if (null != inStream) {
 				try {
 					inStream.close();
 				} catch (IOException e) {
@@ -135,7 +136,7 @@ public class Http {
 		}
 		return inStream;
 	}
-	
+
 	public static HttpClient getHttpClient(int mTimeOut) {
 		BasicHttpParams bparams = new BasicHttpParams();
 		HttpConnectionParams.setConnectionTimeout(bparams, mTimeOut);
@@ -144,27 +145,29 @@ public class Http {
 		HttpClientParams.setRedirecting(bparams, false);
 		return new DefaultHttpClient(bparams);
 	}
-	
-	public static HNetSSLSocketFactory getSSLSocketFactoryWithCert(String cPassWord, String cPath, Context ctx) {
+
+	public static HNetSSLSocketFactory getSSLSocketFactoryWithCert(
+			String cPassWord, String cPath, Context ctx) {
 		InputStream inStream = null;
 		HNetSSLSocketFactory ssSocketFactory = null;
 		try {
 			int index = cPath.lastIndexOf('/');
-	        String keyName = cPath.substring(index);
-	        KeyStore ksP12 = KEY_STORE.get(keyName);
-	        if(null == ksP12){
+			String keyName = cPath.substring(index);
+			KeyStore ksP12 = KEY_STORE.get(keyName);
+			if (null == ksP12) {
 				inStream = getInputStream(cPath, ctx);
-				ksP12 = KeyStore.getInstance("pkcs12");          
+				ksP12 = KeyStore.getInstance("pkcs12");
 				ksP12.load(inStream, cPassWord.toCharArray());
 				KEY_STORE.put(keyName, ksP12);
-	        } 
-	        ssSocketFactory = new HNetSSLSocketFactory(ksP12, cPassWord);
-		}catch (Exception e) {
+			}
+			ssSocketFactory = new HNetSSLSocketFactory(ksP12, cPassWord);
+		} catch (Exception e) {
 			e.printStackTrace();
+			ssSocketFactory = getSSLSocketFactory();
 		}
 		return ssSocketFactory;
 	}
-	
+
 	public static HNetSSLSocketFactory getSSLSocketFactory() {
 		HNetSSLSocketFactory ssSocketFactory = null;
 		try {
@@ -177,7 +180,8 @@ public class Http {
 		return ssSocketFactory;
 	}
 
-	public static HttpsURLConnection getHttpsURLConnection(URL url) throws Exception {
+	public static HttpsURLConnection getHttpsURLConnection(URL url)
+			throws Exception {
 		HttpsURLConnection mConnection = null;
 		mConnection = (HttpsURLConnection) url.openConnection();
 		javax.net.ssl.SSLSocketFactory ssFact = null;
@@ -186,6 +190,9 @@ public class Http {
 		if (!isCheckTrustCert()) {
 			((HttpsURLConnection) mConnection)
 					.setHostnameVerifier(new HX509HostnameVerifier());
+		} else {
+			((HttpsURLConnection) mConnection)
+					.setHostnameVerifier(SSLSocketFactory.STRICT_HOSTNAME_VERIFIER);
 		}
 		return mConnection;
 	}
@@ -200,6 +207,9 @@ public class Http {
 		if (!isCheckTrustCert()) {
 			((HttpsURLConnection) mConnection)
 					.setHostnameVerifier(new HX509HostnameVerifier());
+		} else {
+			((HttpsURLConnection) mConnection)
+					.setHostnameVerifier(SSLSocketFactory.STRICT_HOSTNAME_VERIFIER);
 		}
 		return mConnection;
 	}

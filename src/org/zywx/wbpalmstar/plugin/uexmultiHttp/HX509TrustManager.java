@@ -10,6 +10,8 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
 
+import android.util.Log;
+
 public class HX509TrustManager implements X509TrustManager {
 
 	private X509TrustManager mTrustManager; 
@@ -17,13 +19,21 @@ public class HX509TrustManager implements X509TrustManager {
 	public HX509TrustManager(KeyStore ksP12) throws Exception{
 
 		TrustManagerFactory tfactory = TrustManagerFactory.getInstance(Http.algorithm);  
-		tfactory.init(ksP12);  
-        TrustManager[] trustMgr = tfactory.getTrustManagers();  
-        if (trustMgr.length == 0) {  
+		tfactory.init(ksP12);
+        TrustManager[] trustMgrs = tfactory.getTrustManagers();  
+        if (trustMgrs.length == 0) {  
             throw new NoSuchAlgorithmException("no trust manager found");  
         }  
-        mTrustManager = (X509TrustManager)trustMgr[0]; 
+        mTrustManager = (X509TrustManager)trustMgrs[0]; 
         
+		Log.d("TrustManager", "HX509TrustManager");
+		X509Certificate[] certs = mTrustManager.getAcceptedIssuers();
+		for (X509Certificate cert : certs) {
+			String certStr = "S:" + cert.getSubjectDN().getName() + "\nI:"
+					+ cert.getIssuerDN().getName();
+			Log.d("TrustManager", certStr);
+		}
+
 	}
 
 	@Override
@@ -50,8 +60,14 @@ public class HX509TrustManager implements X509TrustManager {
 
 	@Override
 	public X509Certificate[] getAcceptedIssuers() {
-		
-		return null;
+		X509Certificate[] certs = mTrustManager.getAcceptedIssuers();
+		Log.i("TrustManager", "getAcceptedIssuers");
+		for (X509Certificate cert : certs) {
+			String certStr = "S:" + cert.getSubjectDN().getName() + "\nI:"
+					+ cert.getIssuerDN().getName();
+			Log.i("TrustManager", certStr);
+		}
+		return certs;
 	}
 	
 }

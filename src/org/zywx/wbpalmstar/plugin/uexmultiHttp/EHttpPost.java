@@ -30,9 +30,14 @@ import org.json.JSONObject;
 import org.zywx.wbpalmstar.base.BUtility;
 import org.zywx.wbpalmstar.widgetone.dataservice.WWidgetData;
 
+import android.os.Build;
 import android.os.Process;
 
 public class EHttpPost extends Thread implements HttpTask, HttpClientListener {
+
+	public static final String UA = "Mozilla/5.0 (Linux; U; Mobile; "
+			+ "Android " + Build.VERSION.RELEASE + ";" + Build.MODEL
+			+ " Build/FRF91 )";
 
 	private int mTimeOut;
 	private boolean mRunning;
@@ -423,7 +428,6 @@ public class EHttpPost extends Thread implements HttpTask, HttpClientListener {
 		if (null != mHttpPost) {
 			Set<Entry<String, String>> entrys = mHttpHead.entrySet();
 			for (Map.Entry<String, String> entry : entrys) {
-
 				mHttpPost.addHeader(entry.getKey(), entry.getValue());
 			}
 		}
