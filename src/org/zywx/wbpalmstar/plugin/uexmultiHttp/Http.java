@@ -4,8 +4,12 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.security.KeyStore;
 import java.util.HashMap;
+
+import javax.net.ssl.HttpsURLConnection;
+
 import org.apache.http.HttpVersion;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.params.HttpClientParams;
@@ -30,13 +34,15 @@ public class Http {
 	public static HashMap<String, KeyStore> KEY_STORE = new HashMap<String, KeyStore>();
 	public static String algorithm = "X509";
 	public static String keyType 	= "pkcs12";
-	
+	/**
+	 * 校验证书是否为可信机构颁发
+	 */
+	private static boolean isCheckTrustCert = true;
 	public static HttpClient getHttpsClient(int mTimeOut) {
 		try {
 			KeyStore trustStore = KeyStore.getInstance(keyType);
 			trustStore.load(null, null);
 			SSLSocketFactory socketFact = new HSSLSocketFactory(trustStore, null);
-			socketFact.setHostnameVerifier(new HX509HostnameVerifier());
 			SchemeRegistry registry = new SchemeRegistry();
 			registry.register(new Scheme("http", PlainSocketFactory.getSocketFactory(), 80));
 			registry.register(new Scheme("https", socketFact, 443));
@@ -53,7 +59,7 @@ public class Http {
 			return new DefaultHttpClient(ccm, params);
 		} catch (Exception e) {
 			e.printStackTrace();
-			return null;
+			return getHttpClient(mTimeOut);
 		}
 	}
 	
@@ -70,7 +76,6 @@ public class Http {
 				KEY_STORE.put(keyName, ksP12);
 	        } 
 			SSLSocketFactory socketFact = new HSSLSocketFactory(ksP12, cPassWord);
-			socketFact.setHostnameVerifier(new HX509HostnameVerifier());
 			SchemeRegistry registry = new SchemeRegistry();
 			registry.register(new Scheme("http", PlainSocketFactory.getSocketFactory(), 80));
 			registry.register(new Scheme("https", socketFact, 443));
@@ -87,7 +92,7 @@ public class Http {
 			return new DefaultHttpClient(ccm, params);
 		} catch (Exception e) {
 			e.printStackTrace();
-			return null;
+			return getHttpsClient(mTimeOut);
 		}finally{
 			if(null != inStream){
 				try {
@@ -149,6 +154,7 @@ public class Http {
 	        ssSocketFactory = new HNetSSLSocketFactory(ksP12, cPassWord);
 		}catch (Exception e) {
 			e.printStackTrace();
+			ssSocketFactory = getSSLSocketFactory();
 		}
 		return ssSocketFactory;
 	}
@@ -163,5 +169,43 @@ public class Http {
 			e.printStackTrace();
 		}
 		return ssSocketFactory;
+	}
+	public static HttpsURLConnection getHttpsURLConnection(URL url)
+			throws Exception {
+		HttpsURLConnection mConnection = null;
+		mConnection = (HttpsURLConnection) url.openConnection();
+		javax.net.ssl.SSLSocketFactory ssFact = null;
+		ssFact = Http.getSSLSocketFactory();
+		((HttpsURLConnection) mConnection).setSSLSocketFactory(ssFact);
+		if (!isCheckTrustCert()) {
+			((HttpsURLConnection) mConnection)
+					.setHostnameVerifier(new HX509HostnameVerifier());
+		} else {
+			((HttpsURLConnection) mConnection)
+					.setHostnameVerifier(SSLSocketFactory.STRICT_HOSTNAME_VERIFIER);
+		}
+		return mConnection;
+	}
+	public static HttpsURLConnection getHttpsURLConnectionWithCert(URL url,
+			String cPassWord, String cPath, Context ctx) throws Exception {
+		HttpsURLConnection mConnection = null;
+		mConnection = (HttpsURLConnection) url.openConnection();
+		javax.net.ssl.SSLSocketFactory ssFact = null;
+		ssFact = Http.getSSLSocketFactoryWithCert(cPassWord, cPath, ctx);
+		((HttpsURLConnection) mConnection).setSSLSocketFactory(ssFact);
+		if (!isCheckTrustCert()) {
+			((HttpsURLConnection) mConnection)
+					.setHostnameVerifier(new HX509HostnameVerifier());
+		} else {
+			((HttpsURLConnection) mConnection)
+					.setHostnameVerifier(SSLSocketFactory.STRICT_HOSTNAME_VERIFIER);
+		}
+		return mConnection;
+	}
+	public static boolean isCheckTrustCert() {
+		return isCheckTrustCert;
+	}
+	public static void setCheckTrustCert(boolean isCheckTrustCert) {
+		Http.isCheckTrustCert = isCheckTrustCert;
 	}
 }

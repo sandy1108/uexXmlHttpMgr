@@ -14,7 +14,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.zip.GZIPInputStream;
 
-import javax.net.ssl.HttpsURLConnection;
 
 import org.apache.http.HttpStatus;
 import org.apache.http.cookie.SM;
@@ -144,17 +143,13 @@ public class EHttpGet extends Thread implements HttpTask {
 				mConnection = (HttpURLConnection) mClient.openConnection();
 				break;
 			case F_SHEM_ID_HTTPS:
-				mConnection = (HttpsURLConnection) mClient.openConnection();
-				javax.net.ssl.SSLSocketFactory ssFact = null;
 				if (mHasLocalCert) {
-					ssFact = Http.getSSLSocketFactoryWithCert(mCertPassword,
+					mConnection = Http.getHttpsURLConnectionWithCert(mClient,
+							mCertPassword,
 							mCertPath, mXmlHttpMgr.getContext());
 				} else {
-					ssFact = Http.getSSLSocketFactory();
+					mConnection = Http.getHttpsURLConnection(mClient);
 				}
-				((HttpsURLConnection) mConnection).setSSLSocketFactory(ssFact);
-				((HttpsURLConnection) mConnection)
-						.setHostnameVerifier(new HX509HostnameVerifier());
 				https = true;
 				break;
 			}
@@ -188,8 +183,8 @@ public class EHttpGet extends Thread implements HttpTask {
 			case HttpStatus.SC_TEMPORARY_REDIRECT:
 				List<String> urls = headers.get("Location");
 				if (null != urls && urls.size() > 0) {
-					Log.i("xmlHttpMgr", "redirect url " + responseCode);
 					mRedirects = urls.get(0);
+					Log.i("xmlHttpMgr", "redirect url " + mRedirects);
 					mFromRedirects = true;
 					handleCookie(curUrl, headers);
 					doInBackground();
@@ -212,6 +207,7 @@ public class EHttpGet extends Thread implements HttpTask {
 			} else {
 				result = EUExXmlHttpMgr.CONNECT_FAIL_CONNECTION_FAILURE;
 			}
+			e.printStackTrace();
 		} finally {
 			try {
 				if (null != mInStream) {

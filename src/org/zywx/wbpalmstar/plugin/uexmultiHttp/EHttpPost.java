@@ -30,9 +30,13 @@ import org.json.JSONObject;
 import org.zywx.wbpalmstar.base.BUtility;
 import org.zywx.wbpalmstar.widgetone.dataservice.WWidgetData;
 
+import android.os.Build;
 import android.os.Process;
 
 public class EHttpPost extends Thread implements HttpTask, HttpClientListener {
+	public static final String UA = "Mozilla/5.0 (Linux; U; Mobile; "
+			+ "Android " + Build.VERSION.RELEASE + ";" + Build.MODEL
+			+ " Build/FRF91 )";
 
 	private int mTimeOut;
 	private boolean mRunning;
@@ -233,6 +237,7 @@ public class EHttpPost extends Thread implements HttpTask, HttpClientListener {
 			} else {
 				result = EUExXmlHttpMgr.CONNECT_FAIL_CONNECTION_FAILURE;
 			}
+			e.printStackTrace();
 		} finally {
 			mHttpPost.abort();
 			mHttpClient.getConnectionManager().shutdown();
