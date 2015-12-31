@@ -53,6 +53,10 @@ public class EHttpPost extends Thread implements HttpTask, HttpClientListener {
 	private boolean mFromRedirects;
 	private Hashtable<String, String> mHttpHead;
 
+	private long mStartTimeMillis;
+	private long mEndTimeMillis;
+	private String mUUID;
+
 	static final int BODY_TYPE_TEXT = 0;
 	static final int BODY_TYPE_FILE = 1;
 	
@@ -68,6 +72,7 @@ public class EHttpPost extends Thread implements HttpTask, HttpClientListener {
 		mTimeOut = timeout;
 		mXmlHttpMgr = xmlHttpMgr;
 		mXmlHttpID = Integer.parseInt(inXmlHttpID);
+		mUUID = XmlHttpUtil.getUUID();
 		initNecessaryHeader();
 	}
 
@@ -190,13 +195,16 @@ public class EHttpPost extends Thread implements HttpTask, HttpClientListener {
 		}
 		addHeaders();
 		try {
-			mXmlHttpMgr.printHeader(-1, mXmlHttpID, curUrl, true,
-					mHttpPost.getAllHeaders());
+			mStartTimeMillis = System.currentTimeMillis();
+			mXmlHttpMgr.printHeader(mStartTimeMillis, 0l, 0l, -1, mXmlHttpID,
+					mUUID, curUrl, true, "POST", mHttpPost.getAllHeaders());
 			HttpResponse response = mHttpClient.execute(mHttpPost);
-			responseCode = response.getStatusLine().getStatusCode();
-			responseMessage = response.getStatusLine().getReasonPhrase();
-			headers = response.getAllHeaders();
-			mXmlHttpMgr.printHeader(responseCode, mXmlHttpID, curUrl, false, headers);
+			int responseCode = response.getStatusLine().getStatusCode();
+			mEndTimeMillis = System.currentTimeMillis();
+			mXmlHttpMgr.printHeader(mStartTimeMillis, mEndTimeMillis,
+					mEndTimeMillis - mStartTimeMillis, responseCode,
+					mXmlHttpID, mUUID, curUrl, false, "POST",
+					response.getAllHeaders());
 			switch (responseCode) {
 			case HttpStatus.SC_OK:
 				HttpEntity httpEntity = response.getEntity();

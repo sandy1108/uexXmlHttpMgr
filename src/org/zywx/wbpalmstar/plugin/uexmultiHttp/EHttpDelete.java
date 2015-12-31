@@ -38,6 +38,11 @@ public class EHttpDelete extends Thread implements HttpTask {
 	private boolean mFromRedirects;
 	private Hashtable<String, String> mHttpHead;
 	private HttpDelete mHttpDelete;
+	
+	private long mStartTimeMillis;
+	private long mEndTimeMillis;
+	private String mUUID;
+	
 	private int responseCode = -1;
 	private String responseMessage = "";
 	private Header[] headers;
@@ -48,6 +53,7 @@ public class EHttpDelete extends Thread implements HttpTask {
 		mTimeOut = timeout;
 		mXmlHttpMgr = euExXmlHttpMgr;
 		mUrl = inUrl;
+		mUUID = XmlHttpUtil.getUUID();
 		initNecessaryHeader();
 	}
 
@@ -119,12 +125,18 @@ public class EHttpDelete extends Thread implements HttpTask {
 		}
 		addHeaders();
 		try {
-			mXmlHttpMgr.printHeader(-1, mXmlHttpID, curUrl, true, mHttpDelete.getAllHeaders());
+			mStartTimeMillis = System.currentTimeMillis();
+			mXmlHttpMgr.printHeader(mStartTimeMillis, 0l, 0l, -1, mXmlHttpID,
+					mUUID, curUrl, true, "POST", mHttpDelete.getAllHeaders());
 			HttpResponse response = mHttpClient.execute(mHttpDelete);
 			responseCode = response.getStatusLine().getStatusCode();
 			responseMessage = response.getStatusLine().getReasonPhrase();
 			headers = response.getAllHeaders();
-			mXmlHttpMgr.printHeader(responseCode, mXmlHttpID, curUrl, false, headers);
+			mEndTimeMillis = System.currentTimeMillis();
+			mXmlHttpMgr.printHeader(mStartTimeMillis, mEndTimeMillis,
+					mEndTimeMillis - mStartTimeMillis, responseCode,
+					mXmlHttpID, mUUID, curUrl, false, "POST",
+					response.getAllHeaders());
 			switch (responseCode) {
 			case HttpStatus.SC_OK:
 				HttpEntity httpEntity = response.getEntity();

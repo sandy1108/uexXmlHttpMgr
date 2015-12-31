@@ -12,6 +12,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.zip.GZIPInputStream;
 
 import org.apache.http.Header;
@@ -22,6 +23,7 @@ import org.json.JSONObject;
 import org.zywx.wbpalmstar.widgetone.dataservice.WWidgetData;
 
 import android.os.Environment;
+import android.util.Log;
 
 public class XmlHttpUtil {
 
@@ -29,24 +31,54 @@ public class XmlHttpUtil {
 	static DateFormat formatter = new SimpleDateFormat("yyyyMMdd");
 	static DateFormat formatter1 = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
 
+	// public static void printInfo2File(String msg) {
+	// if (null == msg || 0 == msg.length()) {
+	// return;
+	// }
+	// try {
+	// String time = formatter.format(new Date());
+	// String time1 = formatter1.format(new Date());
+	// String fileName = time + ".log";
+	// if (Environment.getExternalStorageState().equals(
+	// Environment.MEDIA_MOUNTED)) {
+	// // String path = "/sdcard/widgetone/log/xmlHttp/";
+	// String path = BUtility.getSdCardRootPath()
+	// + "widgetone/log/xmlHttp/";
+	// File dir = new File(path);
+	// if (!dir.exists()) {
+	// dir.mkdirs();
+	// }
+	// FileOutputStream fos = new FileOutputStream(path + fileName,
+	// true);
+	// fos.write((time1 + ": " + msg + "\n").getBytes());
+	// fos.flush();
+	// fos.close();
+	// }
+	// } catch (Exception e) {
+	// e.printStackTrace();
+	// }
+	// }
+
 	public static void printInfo2File(String msg) {
+		Log.i("uexXmlHttpMgr", msg);
 		if (null == msg || 0 == msg.length()) {
 			return;
 		}
 		try {
 			String time = formatter.format(new Date());
-			String time1 = formatter1.format(new Date());
+			// String time1 = formatter1.format(new Date());
 			String fileName = time + ".log";
 			if (Environment.getExternalStorageState().equals(
 					Environment.MEDIA_MOUNTED)) {
-				String path = "/sdcard/widgetone/log/xmlHttp/";
+				String path = Environment.getExternalStorageDirectory()
+						.getAbsolutePath() + "/widgetone/log/xmlHttp";
 				File dir = new File(path);
 				if (!dir.exists()) {
 					dir.mkdirs();
 				}
-				FileOutputStream fos = new FileOutputStream(path + fileName,
-						true);
-				fos.write((time1 + ": " + msg + "\n").getBytes());
+				FileOutputStream fos = new FileOutputStream(path
+						+ File.separator + fileName, true);
+				fos.write((msg + "\n").getBytes());
 				fos.flush();
 				fos.close();
 			}
@@ -247,5 +279,14 @@ public class XmlHttpUtil {
 			inputStream.close();
 		}
 		return buffer;
+	}
+		/**
+	 * 获取UUID用来标识每一次http请求，便于配合服务端调试
+	 * 
+	 * @return
+	 */
+	public static String getUUID() {
+		UUID uuid = UUID.randomUUID();
+		return uuid.toString();
 	}
 }

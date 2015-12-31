@@ -55,13 +55,18 @@ public class EHttpPut extends Thread implements HttpTask, HttpClientListener {
 	private int responseCode = -1;
 	private String responseMessage = "";
 	private Header[] headers;
-
+	
+	private long mStartTimeMillis;
+	private long mEndTimeMillis;
+	private String mUUID;
+	
 	public EHttpPut(String inXmlHttpID, String inUrl, int timeout,
 			EUExXmlHttpMgr euExXmlHttpMgr) {
 		mUrl = inUrl;
 		mTimeOut = timeout;
 		mXmlHttpMgr = euExXmlHttpMgr;
 		mXmlHttpID = Integer.parseInt(inXmlHttpID);
+		mUUID = XmlHttpUtil.getUUID();
 		initNecessaryHeader();
 	}
 
@@ -187,12 +192,18 @@ public class EHttpPut extends Thread implements HttpTask, HttpClientListener {
 		}
 		addHeaders();
 		try {
-			mXmlHttpMgr.printHeader(-1, mXmlHttpID, curUrl, true, mHttpPut.getAllHeaders());
+			mStartTimeMillis = System.currentTimeMillis();
+			mXmlHttpMgr.printHeader(mStartTimeMillis, 0l, 0l, -1, mXmlHttpID,
+					mUUID, curUrl, true, "POST", mHttpPut.getAllHeaders());
 			HttpResponse response = mHttpClient.execute(mHttpPut);
 			responseCode = response.getStatusLine().getStatusCode();
 			responseMessage = response.getStatusLine().getReasonPhrase();
 			headers = response.getAllHeaders();
-			mXmlHttpMgr.printHeader(responseCode, mXmlHttpID, curUrl, false, headers);
+			mEndTimeMillis = System.currentTimeMillis();
+			mXmlHttpMgr.printHeader(mStartTimeMillis, mEndTimeMillis,
+					mEndTimeMillis - mStartTimeMillis, responseCode,
+					mXmlHttpID, mUUID, curUrl, false, "POST",
+					response.getAllHeaders());
 			switch (responseCode) {
 			case HttpStatus.SC_OK:
 				HttpEntity httpEntity = response.getEntity();

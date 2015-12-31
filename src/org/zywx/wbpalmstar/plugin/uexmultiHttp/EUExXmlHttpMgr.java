@@ -11,6 +11,7 @@ import java.util.Set;
 
 import org.apache.http.Header;
 import org.apache.http.HttpHost;
+import org.json.JSONObject;
 import org.zywx.wbpalmstar.base.BUtility;
 import org.zywx.wbpalmstar.engine.EBrowserView;
 import org.zywx.wbpalmstar.engine.universalex.EUExBase;
@@ -40,7 +41,9 @@ public class EUExXmlHttpMgr extends EUExBase {
 
 	private Hashtable<Object, HttpTask> mXmlHttpMap;
 	private Hashtable<String, Boolean> mNeedVerifyMap;
-	private boolean mPrintLog = false;
+	private boolean mPrintLog = true;
+	private boolean mPrintHeadersLog = true;
+	private boolean mPrintResultLog = false;
 
 	public static final String getCookie_onFunction = "uexXmlHttpMgr.cbGetCookie";
 
@@ -67,7 +70,7 @@ public class EUExXmlHttpMgr extends EUExBase {
 		String inTimeout = parm[3];
 		int timeout = 1000 * 30;
 		try {
-			if(inTimeout != null && Integer.valueOf(inTimeout) != 0) {
+			if (inTimeout != null && Integer.valueOf(inTimeout) != 0) {
 				timeout = Integer.valueOf(inTimeout);
 			}
 		} catch (Exception e) {
@@ -90,7 +93,7 @@ public class EUExXmlHttpMgr extends EUExBase {
 			return;
 		}
 		HttpTask xmlHttp = null;
-		if (inMethod.equalsIgnoreCase("get")){
+		if (inMethod.equalsIgnoreCase("get")) {
 			xmlHttp = new EHttpGet(opCode, inUrl, timeout, this);
 		}
 		if (inMethod.equalsIgnoreCase("post")) {
@@ -160,7 +163,7 @@ public class EUExXmlHttpMgr extends EUExBase {
 			xmlHttp.setData(type, inKey, inValue);
 		}
 	}
-	
+
 	public void setInputStream(String[] parm) {
 		if (parm.length < 2 || null == mXmlHttpMap) {
 			return;
@@ -238,7 +241,8 @@ public class EUExXmlHttpMgr extends EUExBase {
 		}
 		HttpTask xmlHttp = mXmlHttpMap.get(inXmlHttpOpCode);
 		if (null != xmlHttp) {
-			if(mNeedVerifyMap != null && mNeedVerifyMap.containsKey(inXmlHttpOpCode)) {
+			if (mNeedVerifyMap != null
+					&& mNeedVerifyMap.containsKey(inXmlHttpOpCode)) {
 				Boolean isNeedAppVerify = mNeedVerifyMap.get(inXmlHttpOpCode);
 				if (isNeedAppVerify) {
 					xmlHttp.setAppVerifyHeader(mCurWData);
@@ -312,7 +316,6 @@ public class EUExXmlHttpMgr extends EUExBase {
 		jsCallback(getCookie_onFunction, 0, EUExCallback.F_C_JSON, jsonS);
 	}
 
-
 	public void onFinish(int opCode) {
 		String code = String.valueOf(opCode);
 		HttpTask xmlHttp = mXmlHttpMap.get(code);
@@ -321,53 +324,133 @@ public class EUExXmlHttpMgr extends EUExBase {
 		}
 	}
 
-	public void printHeader(int code, int opCode, String url, boolean out,
-			Header[] header) {
-		if (mPrintLog && null != header) {
-			String str = code + " , " + opCode + " , "
-					+ (out ? "out: " : "back: ") + url + ", ";
-			StringBuffer sb = new StringBuffer();
-			for (Header h : header) {
-				sb.append(h.getName());
-				sb.append("=");
-				sb.append(h.getValue());
-				sb.append(";");
-			}
-			// System.out.println(sb.toString());
-			XmlHttpUtil.printInfo2File(str + sb.toString());
-		}
-	}
-
 	public void printResult(int opCode, String url, String result) {
-		if (mPrintLog && null != result) {
+		if (mPrintResultLog && null != result) {
 			String str = opCode + " , " + url + " , " + result;
 			XmlHttpUtil.printInfo2File(str);
 		}
 	}
 
-	public void printHeader(int code, int opCode, String url, boolean out,
-			Map<String, List<String>> headers) {
-		if (mPrintLog && null != headers) {
-			String str = code + " , " + opCode + " , "
-					+ (out ? "out: " : "back: ") + url + ", ";
-			StringBuffer sb = new StringBuffer();
-			for (Map.Entry<String, List<String>> entry : headers.entrySet()) {
-				String key = entry.getKey();
-				List<String> value = entry.getValue();
-				if (null != value) {
-					sb.append(key);
-					sb.append("=");
-					String s = "";
-					for (String v : value) {
-						s += v;
-					}
-					sb.append(s);
-					sb.append(";");
+	public void printHeader(long startTime, long endTime, long costTime,
+			int responseCode, int opCode, String uuid, String url, boolean out,
+			String method, Header[] header) {
+		if (mPrintHeadersLog && null != header) {
+			JSONObject logJson = new JSONObject();
+
+			try {
+				logJson.put("run_time", startTime);
+				logJson.put("endTime", endTime);
+				logJson.put("costTime", costTime);
+				logJson.put("OP-UUID", uuid);
+				logJson.put("opCode", opCode);
+				logJson.put("responseCode", responseCode);
+				logJson.put("type", out ? "request: " : "response: ");
+				logJson.put("method", method);
+				logJson.put("url", url);
+
+				StringBuffer headersStr = new StringBuffer();
+				for (Header h : header) {
+					headersStr.append(h.getName());
+					headersStr.append("=");
+					headersStr.append(h.getValue());
+					headersStr.append(";");
 				}
+				logJson.put("header", headersStr.toString());
+				String logStr = logJson.toString();
+				XmlHttpUtil.printInfo2File(logStr);
+			} catch (Exception e) {
+				e.printStackTrace();
 			}
-			XmlHttpUtil.printInfo2File(str + sb.toString());
 		}
 	}
+
+	public void printHeader(long startTime, long endTime, long costTime,
+			int responseCode, int opCode, String uuid, String url, boolean out,
+			String method, Map<String, List<String>> headers) {
+		if (mPrintHeadersLog && null != headers) {
+			JSONObject logJson = new JSONObject();
+			try {
+				logJson.put("run_time", startTime);
+				logJson.put("endTime", endTime);
+				logJson.put("costTime", costTime);
+				logJson.put("OP-UUID", uuid);
+				logJson.put("opCode", opCode);
+				logJson.put("responseCode", responseCode);
+				logJson.put("type", out ? "request: " : "response: ");
+				logJson.put("method", method);
+				logJson.put("url", url);
+
+				StringBuffer headersStr = new StringBuffer();
+				for (Map.Entry<String, List<String>> entry : headers.entrySet()) {
+					String key = entry.getKey();
+					List<String> value = entry.getValue();
+					if (null != value) {
+						headersStr.append(key);
+						headersStr.append("=");
+						String s = "";
+						for (String v : value) {
+							s += v;
+						}
+						headersStr.append(s);
+						headersStr.append(";");
+					}
+				}
+				logJson.put("header", headersStr.toString());
+				String logStr = logJson.toString();
+				XmlHttpUtil.printInfo2File(logStr);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
+	// public void printHeader(int code, int opCode, String url, boolean out,
+	// Header[] header) {
+	// if (mPrintLog && null != header) {
+	// String str = code + " , " + opCode + " , "
+	// + (out ? "out: " : "back: ") + url + ", ";
+	// StringBuffer sb = new StringBuffer();
+	// for (Header h : header) {
+	// sb.append(h.getName());
+	// sb.append("=");
+	// sb.append(h.getValue());
+	// sb.append(";");
+	// }
+	// // System.out.println(sb.toString());
+	// XmlHttpUtil.printInfo2File(str + sb.toString());
+	// }
+	// }
+	//
+	// public void printResult(int opCode, String url, String result) {
+	// if (mPrintLog && null != result) {
+	// String str = opCode + " , " + url + " , " + result;
+	// XmlHttpUtil.printInfo2File(str);
+	// }
+	// }
+	//
+	// public void printHeader(int code, int opCode, String url, boolean out,
+	// Map<String, List<String>> headers) {
+	// if (mPrintLog && null != headers) {
+	// String str = code + " , " + opCode + " , "
+	// + (out ? "out: " : "back: ") + url + ", ";
+	// StringBuffer sb = new StringBuffer();
+	// for (Map.Entry<String, List<String>> entry : headers.entrySet()) {
+	// String key = entry.getKey();
+	// List<String> value = entry.getValue();
+	// if (null != value) {
+	// sb.append(key);
+	// sb.append("=");
+	// String s = "";
+	// for (String v : value) {
+	// s += v;
+	// }
+	// sb.append(s);
+	// sb.append(";");
+	// }
+	// }
+	// XmlHttpUtil.printInfo2File(str + sb.toString());
+	// }
+	// }
 
 	public String getWidgetPath() {
 
@@ -379,15 +462,19 @@ public class EUExXmlHttpMgr extends EUExBase {
 		return mBrwView.getWidgetType();
 	}
 
-	public void callBack(int inOpCode, String inResult, int responseCode, String response) {
+	public void callBack(int inOpCode, String inResult, int responseCode,
+			String response) {
 		String js = SCRIPT_HEADER + "if(" + onFunction + "){" + onFunction
-				+ "(" + inOpCode + "," + 1 + ",'" + inResult +"'," + responseCode + ",'" + response + "');}";
+				+ "(" + inOpCode + "," + 1 + ",'" + inResult + "',"
+				+ responseCode + ",'" + response + "');}";
 		onCallback(js);
 	}
 
-	public void errorCallBack(int inOpCode, String inResult, int responseCode, String response) {
+	public void errorCallBack(int inOpCode, String inResult, int responseCode,
+			String response) {
 		String js = SCRIPT_HEADER + "if(" + onFunction + "){" + onFunction
-				+ "(" + inOpCode + "," + (-1) + ",'" + inResult + "'," + responseCode + ",'" + response +"');}";
+				+ "(" + inOpCode + "," + (-1) + ",'" + inResult + "',"
+				+ responseCode + ",'" + response + "');}";
 		onCallback(js);
 	}
 

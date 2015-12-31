@@ -60,6 +60,10 @@ public class ECusHttpPost extends Thread implements HttpTask,
 	private int mShemeId;
 	private boolean mFromRedirects;
 
+	private long mStartTimeMillis;
+	private long mEndTimeMillis;
+	private String mUUID;
+
 	public ECusHttpPost(String inXmlHttpID, String url, int timeout,
 			EUExXmlHttpMgr xmlHttpMgr) {
 		mUrl = url;
@@ -67,6 +71,7 @@ public class ECusHttpPost extends Thread implements HttpTask,
 		mXmlHttpMgr = xmlHttpMgr;
 		mXmlHttpID = Integer.parseInt(inXmlHttpID);
 		mShemeId = url.startsWith("https") ? F_SHEM_ID_HTTPS : F_SHEM_ID_HTTP;
+		mUUID = XmlHttpUtil.getUUID();
 		setName("SoTowerMobile-HttpPost");
 	}
 
@@ -205,16 +210,19 @@ public class ECusHttpPost extends Thread implements HttpTask,
 			mConnection.setConnectTimeout(mTimeOut);
 			mConnection.setInstanceFollowRedirects(false);
 			addHeaders();
-			mXmlHttpMgr.printHeader(-1, mXmlHttpID, curUrl, true,
+			mStartTimeMillis = System.currentTimeMillis();
+			mXmlHttpMgr.printHeader(mStartTimeMillis, 0l, 0l, -1, mXmlHttpID,
+					mUUID, curUrl, true, "POST",
 					mConnection.getRequestProperties());
 			mConnection.connect();
 			mOutStream = new DataOutputStream(mConnection.getOutputStream());
 			multiEn.writeTo(mOutStream);
 			responseCode = mConnection.getResponseCode();
-			responseMessage = mConnection.getResponseMessage();
-			headers = mConnection.getHeaderFields();
-			mXmlHttpMgr.printHeader(responseCode, mXmlHttpID, curUrl, false,
-					headers);
+			Map<String, List<String>> headers = mConnection.getHeaderFields();
+			mEndTimeMillis = System.currentTimeMillis();
+			mXmlHttpMgr.printHeader(mStartTimeMillis, mEndTimeMillis,
+					mEndTimeMillis - mStartTimeMillis, responseCode,
+					mXmlHttpID, mUUID, curUrl, false, "POST", headers);
 			switch (responseCode) {
 			case HttpStatus.SC_OK:
 				byte[] bResult = toByteArray(mConnection);

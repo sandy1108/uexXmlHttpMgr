@@ -60,6 +60,9 @@ public class EHttpGet extends Thread implements HttpTask {
 	private String responseError = "";
 	private Map<String, List<String>> headers;
 	private InputStream mErrorInStream;
+	private long mStartTimeMillis;
+	private long mEndTimeMillis;
+	private String mUUID;
 
 	// private String mBody;
 
@@ -71,6 +74,7 @@ public class EHttpGet extends Thread implements HttpTask {
 		mXmlHttpMgr = meUExXmlHttpMgr;
 		mUrl = url;
 		mShemeId = url.startsWith("https") ? F_SHEM_ID_HTTPS : F_SHEM_ID_HTTP;
+		mUUID = XmlHttpUtil.getUUID();
 		initNecessaryHeader();
 	}
 
@@ -170,14 +174,18 @@ public class EHttpGet extends Thread implements HttpTask {
 			mConnection.setReadTimeout(mTimeOut);
 			mConnection.setConnectTimeout(mTimeOut);
 			mConnection.setInstanceFollowRedirects(false);
-			mXmlHttpMgr.printHeader(-1, mXmlHttpID, curUrl, true,
+			mStartTimeMillis = System.currentTimeMillis();
+			mXmlHttpMgr.printHeader(mStartTimeMillis, 0l, 0l, -1, mXmlHttpID,
+					mUUID, curUrl, true, "GET",
 					mConnection.getRequestProperties());
 			mConnection.connect();
 			responseCode = mConnection.getResponseCode();
 			responseMessage = mConnection.getResponseMessage();
 			headers = mConnection.getHeaderFields();
-			mXmlHttpMgr.printHeader(responseCode, mXmlHttpID, curUrl, false,
-					headers);
+			mEndTimeMillis = System.currentTimeMillis();
+			mXmlHttpMgr.printHeader(mStartTimeMillis, mEndTimeMillis,
+					mEndTimeMillis - mStartTimeMillis, responseCode,
+					mXmlHttpID, mUUID, curUrl, false, "GET", headers);
 			switch (responseCode) {
 			case HttpStatus.SC_OK:
 				byte[] bResult = toByteArray(mConnection);
